@@ -1,0 +1,5 @@
+# Ignore local environment files and compiled artifacts
+.env
+__pycache__/
+*.pyc
+.DS_Store
