@@ -1,0 +1,31 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: cadvisor
+    static_configs:
+      - targets: ["cadvisor:8080"]
+
+  - job_name: node
+    static_configs:
+      - targets: ["localhost:9100"]
+
+  - job_name: trino
+    static_configs:
+      - targets: ["trino:9404"]
+
+  - job_name: spark
+    static_configs:
+      - targets:
+          - "spark:9308"
+
+  - job_name: airflow
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["airflow-exporter:9112"]
+
+  - job_name: minio
+    metrics_path: /minio/v2/metrics/cluster
+    static_configs:
+      - targets: ["minio:9000"]
