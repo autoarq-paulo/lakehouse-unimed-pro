@@ -1,0 +1,58 @@
+# Lakehouse Unimed Pro
+
+Projeto educacional demonstrando uma arquitetura de **lakehouse** utilizando:
+
+- **Delta Lake** nas camadas **Bronze** e **Silver** para ingestão e transformação com suporte a *MERGE* e *Change Data Feed*;
+- **Apache Iceberg** na camada **Gold** para modelagem analítica com snapshots e evolução de partições;
+- **Apache Spark** para processamento em batch;
+- **Apache Airflow** para orquestração de pipelines;
+- **Trino** para consultas SQL federadas sobre Delta, Iceberg e Postgres;
+- **Prometheus** e **Grafana** para observabilidade e dashboards.
+
+## Estrutura de diretórios
+
+- `compose/` – arquivos de definição do Docker Compose.
+- `deploy/` – configurações de serviços (Trino, Prometheus, JMX, Airflow, Grafana).
+- `jobs/` – scripts Spark para ingesção (`bronze`), transformação (`silver`) e modelagem (`gold`).
+- `dq/` – regras de qualidade de dados com Great Expectations.
+- `sql/` – exemplos de queries no Trino.
+- `Makefile` – comandos de conveniência.
+- `.env.sample` – modelo de variáveis de ambiente (renomeie para `.env`).
+
+## Como usar
+
+1. **Preparação**
+   - Copie `.env.sample` para `.env` e ajuste as variáveis conforme necessário (credenciais de MinIO, Postgres, etc.).
+   - Certifique‑se de ter **Docker** e **Docker Compose** instalados.
+
+2. **Subir os serviços**
+   ```bash
+   make up
+   ```
+
+3. **Inicializar o bucket no MinIO** (uma vez após subir os contêineres):
+   ```bash
+   make init-minio
+   ```
+
+4. **Carregar dados de exemplo**
+   - Faça upload de arquivos CSV fictícios para `s3://lakehouse/landing/unimed/claims/` (pode ser realizado via console do MinIO em `http://localhost:9001`).
+
+5. **Executar o pipeline completo**
+   ```bash
+   make e2e
+   ```
+   Isso dispara a DAG `lake_unimed_e2e` no Airflow, que ingere Bronze → Silver → verifica qualidade com Great Expectations → publica Gold no Iceberg.
+
+6. **Acessar UIs e consultar dados**
+   - Airflow: http://localhost:8088
+   - Trino: http://localhost:8080
+   - MinIO Console: http://localhost:9001
+   - Grafana: http://localhost:3000 (configure data sources Prometheus e Trino conforme necessidade)
+
+7. **Consultas exemplo**
+   - Use o arquivo `sql/trino_checks.sql` para verificar schemas e tabelas na camada Gold.
+
+## Observações
+
+Este repositório é apenas um laboratório. Para uso em produção considere adicionar camadas de segurança (TLS, autenticação, políticas granulares), automação de manutenção (compaction, vacuum, expire snapshots) e monitoramento mais completo. A estrutura pode ser evoluída conforme as necessidades de cada ambiente.
